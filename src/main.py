@@ -24,25 +24,33 @@ from torch.autograd import Variable
 
 from utils import *
 from model import *
-
+import os
 
 def parse_args():
     """Parse arguments."""
     # Parameters settings
-    parser = argparse.ArgumentParser(description="PyTorch implementation of paper 'A Dual-Stage Attention-Based Recurrent Neural Network for Time Series Prediction'")
+    parser = argparse.ArgumentParser(
+        description="PyTorch implementation of paper 'A Dual-Stage Attention-Based Recurrent Neural Network for Time Series Prediction'")
 
     # Dataset setting
-    parser.add_argument('--dataroot', type=str, default="../nasdaq/nasdaq100_padding.csv", help='path to dataset')
-    parser.add_argument('--batchsize', type=int, default=128, help='input batch size [128]')
+    parser.add_argument('--dataroot', type=str,
+                        default="../nasdaq/nasdaq100_padding.csv", help='path to dataset')
+    parser.add_argument('--batchsize', type=int, default=128,
+                        help='input batch size [128]')
 
     # Encoder / Decoder parameters setting
-    parser.add_argument('--nhidden_encoder', type=int, default=128, help='size of hidden states for the encoder m [64, 128]')
-    parser.add_argument('--nhidden_decoder', type=int, default=128, help='size of hidden states for the decoder p [64, 128]')
-    parser.add_argument('--ntimestep', type=int, default=10, help='the number of time steps in the window T [10]')
+    parser.add_argument('--nhidden_encoder', type=int, default=128,
+                        help='size of hidden states for the encoder m [64, 128]')
+    parser.add_argument('--nhidden_decoder', type=int, default=128,
+                        help='size of hidden states for the decoder p [64, 128]')
+    parser.add_argument('--ntimestep', type=int, default=10,
+                        help='the number of time steps in the window T [10]')
 
     # Training parameters setting
-    parser.add_argument('--epochs', type=int, default=10, help='number of epochs to train [10, 200, 500]')
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate [0.001] reduced by 0.1 after each 10000 iterations')
+    parser.add_argument('--epochs', type=int, default=10,
+                        help='number of epochs to train [10, 200, 500]')
+    parser.add_argument('--lr', type=float, default=0.001,
+                        help='learning rate [0.001] reduced by 0.1 after each 10000 iterations')
 
     # parse the arguments
     args = parser.parse_args()
@@ -75,6 +83,10 @@ def main():
     print("==> Start training ...")
     model.train()
 
+    saveWeights(model)
+
+
+def predict(model):
     # Prediction
     y_pred = model.test()
 
@@ -95,6 +107,18 @@ def main():
     plt.savefig("3.png")
     plt.close(fig3)
     print('Finished Training')
+
+
+def loadWeights(model):
+    cwd = os.getcwd()
+    PATH = cwd + "model.pkl"
+    model = torch.load(PATH)
+
+
+def saveWeights( model):
+    cwd = os.getcwd()
+    PATH = cwd + "model.pkl"
+    torch.save(model, PATH)
 
 
 if __name__ == '__main__':

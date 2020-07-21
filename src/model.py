@@ -82,8 +82,9 @@ class Encoder(nn.Module):
             x = self.encoder_attn(
                 x.view(-1, self.encoder_num_hidden * 2 + self.T - 1))
 
+            #print(x.view(-1, self.input_size).shape)
             # get weights by softmax
-            alpha = F.softmax(x.view(-1, self.input_size))
+            alpha = F.softmax(x.view(-1, self.input_size), dim=1)
 
             # get new input for LSTM
             x_tilde = torch.mul(alpha, X[:, t, :])
@@ -144,9 +145,10 @@ class Decoder(nn.Module):
             x = torch.cat((d_n.repeat(self.T - 1, 1, 1).permute(1, 0, 2),
                            c_n.repeat(self.T - 1, 1, 1).permute(1, 0, 2),
                            X_encoded), dim=2)
-
+            # self.attn_layer(
+            #     x.view(-1, 2 * self.decoder_num_hidden + self.encoder_num_hidden)).view(-1, self.T - 1)
             beta = F.softmax(self.attn_layer(
-                x.view(-1, 2 * self.decoder_num_hidden + self.encoder_num_hidden)).view(-1, self.T - 1))
+                x.view(-1, 2 * self.decoder_num_hidden + self.encoder_num_hidden)).view(-1, self.T - 1), dim=1)
 
             # Eqn. 14: compute context vector
             # batch_size * encoder_hidden_size
@@ -259,7 +261,7 @@ class DA_RNN(nn.Module):
                 for bs in range(len(indices)):
                     x[bs, :, :] = self.X[indices[bs]:(
                         indices[bs] + self.T - 1), :]
-                    y_prev[bs, :] = self.y[indices[bs]: (indices[bs] + self.T - 1)]
+                    y_prev[bs, :] = self.y[indices[bs]                                           : (indices[bs] + self.T - 1)]
 
                 loss = self.train_forward(x, y_prev, y_gt)
                 self.iter_losses[int(
